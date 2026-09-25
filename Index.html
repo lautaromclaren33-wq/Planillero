@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bitácora</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+
+    --paper: #F1ECE0;
+    --paper-2: #E7E0CE;
+    --ink: #2B2620;
+    --ink-soft: #6B6252;
+    --teal: #1F5C52;
+    --teal-soft: #DCE8E4;
+    --ochre: #B9791F;
+    --ochre-soft: #F1E1BE;
+    --rose: #A8503F;
+    --line: #D8CFBC;
+
+    --font-serif: 'Fraunces', Georgia, 'Times New Roman', serif;
+    --font-sans: 'IBM Plex Sans', -apple-system, 'Segoe UI', Roboto, sans-serif;
+  }
+  html{ scroll-padding-top: env(safe-area-inset-top, 0px); }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper: #1B1A17;
+      --paper-2: #242220;
+      --ink: #EEE7D9;
+      --ink-soft: #A79D8A;
+      --teal: #6FBBA9;
+      --teal-soft: #23342F;
+      --ochre: #E0A94D;
+      --ochre-soft: #3B2E19;
+      --rose: #DB9280;
+      --line: #3A362E;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper: #1B1A17;
+    --paper-2: #242220;
+    --ink: #EEE7D9;
+    --ink-soft: #A79D8A;
+    --teal: #6FBBA9;
+    --teal-soft: #23342F;
+    --ochre: #E0A94D;
+    --ochre-soft: #3B2E19;
+    --rose: #DB9280;
+    --line: #3A362E;
+  }
+
+  *,*::before,*::after{ box-sizing: inherit; }
+  html,body{ margin:0; height:100%; }
+  body{
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  button, input, textarea{ font-family: inherit; color: inherit; }
+  button:focus-visible, input:focus-visible, textarea:focus-visible{
+    outline: 2px solid var(--teal); outline-offset: 2px;
+  }
+
+  .app-shell{ max-width: 640px; margin: 0 auto; padding: 0 20px 60px; }
+
+  header.topbar{
+    display:flex; align-items:flex-end; justify-content:space-between; gap:14px;
+    padding-top: calc(18px + env(safe-area-inset-top, 0px));
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--line);
+    position: sticky; top:0; background: var(--paper); z-index: 5;
+  }
+  .brand h1{ font-family: var(--font-serif); font-weight:500; font-style: italic; font-size: 28px; margin:0; }
+  .brand .date-today{ margin: 2px 0 0; font-size: 13px; color: var(--ink-soft); }
+  .topbar-right{ display:flex; align-items:center; gap:10px; }
+  .streak{ display:flex; align-items:baseline; gap:4px; font-family: var(--font-serif); font-size:22px; color: var(--ochre); }
+  .streak .streak-label{ font-family: var(--font-sans); font-size:11px; color: var(--ink-soft); margin-left:3px; }
+  .theme-toggle{
+    background:none; border:1px solid var(--line); border-radius:6px;
+    width:34px; height:34px; font-size:15px; cursor:pointer;
+  }
+
+  nav.tabs{ display:flex; gap:2px; margin-top:14px; border-bottom:1px solid var(--line); overflow-x:auto; }
+  .tab{
+    background:none; border:none; font-size:14px; padding:10px 12px;
+    color: var(--ink-soft); cursor:pointer; border-bottom:2px solid transparent; white-space:nowrap;
+  }
+  .tab.active{ color: var(--teal); border-bottom-color: var(--teal); font-weight:600; }
+
+  main{ padding-top: 22px; }
+  .panel{ display:none; }
+  .panel.active{ display:block; }
+
+  h2.section-title{ font-family: var(--font-serif); font-style: italic; font-weight:500; font-size:21px; margin:0 0 6px; }
+  p.hint{ font-size:13px; color: var(--ink-soft); margin:0 0 16px; max-width: 58ch; }
+
+  form.add-row{ display:flex; gap:8px; margin-bottom:6px; }
+  form.add-row input[type=text]{
+    flex:1; font-size:15px; padding:10px 12px; border:1px solid var(--line);
+    border-radius:4px; background: var(--paper-2); color: var(--ink);
+  }
+  form.add-row button{
+    font-size:14px; font-weight:600; padding:0 16px; border:1px solid var(--teal);
+    background: var(--teal); color: var(--paper); border-radius:4px; cursor:pointer;
+  }
+  form.add-row button:disabled{ opacity:.4; cursor:not-allowed; }
+  .cap-msg{ font-size:12px; color: var(--ochre); margin:0 0 14px; min-height: 14px; }
+
+  ul.item-list{ list-style:none; margin: 10px 0 0; padding:0; border-top:1px solid var(--line); }
+  .task-row{ display:flex; align-items:center; gap:10px; padding:12px 2px; border-bottom:1px solid var(--line); }
+  .task-row.done .task-text{ text-decoration: line-through; color: var(--ink-soft); }
+  .task-text{ flex:1; font-size:15px; word-break: break-word; }
+  button.check{
+    width:20px; height:20px; border:1.5px solid var(--ink-soft); border-radius:4px;
+    background:none; cursor:pointer; flex-shrink:0; position:relative; padding:0;
+  }
+  .task-row.done button.check{ background: var(--teal); border-color: var(--teal); }
+  .task-row.done button.check::after{
+    content:'✓'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-size:13px; color: var(--paper);
+  }
+  button.del{ background:none; border:none; color: var(--ink-soft); font-size:19px; cursor:pointer; line-height:1; padding:0 4px; }
+  button.del:hover{ color: var(--rose); }
+  li.empty{ padding:16px 2px; color: var(--ink-soft); font-size:14px; font-style:italic; border-bottom:none; }
+  @media (prefers-reduced-motion: no-preference){
+    button.check{ transition: background-color .15s ease, border-color .15s ease; }
+  }
+
+  .carry-box{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    background: var(--ochre-soft); border:1px solid var(--ochre); border-radius:6px;
+    padding:10px 14px; margin-bottom:18px; font-size:13px;
+  }
+  .carry-box button{
+    font-size:13px; font-weight:600; background:none; border:1px solid var(--ochre);
+    color: var(--ochre); border-radius:4px; padding:6px 10px; cursor:pointer; flex-shrink:0;
+  }
+
+  .week-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin: 18px 0 26px; }
+  .grid-cell{
+    aspect-ratio:1; border-radius:4px; background: var(--paper-2); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:11px; color: var(--ink-soft);
+  }
+  .grid-cell.level-1{ background: var(--teal-soft); }
+  .grid-cell.level-2{ background: color-mix(in srgb, var(--teal) 55%, var(--paper-2)); color: var(--paper); }
+  .grid-cell.level-3{ background: var(--teal); color: var(--paper); }
+  .grid-cell.is-today{ border-color: var(--ochre); border-width:2px; }
+
+  .review-list{ list-style:none; padding:0; margin: 4px 0 26px; display:flex; flex-direction:column; gap:12px; }
+  .review-item{ display:flex; align-items:flex-start; gap:10px; font-size:14px; }
+  .review-item input[type=checkbox]{ margin-top:3px; width:16px; height:16px; accent-color: var(--teal); flex-shrink:0; }
+
+  textarea#monthNote{
+    width:100%; min-height:90px; font-size:14px; padding:10px 12px; border:1px solid var(--line);
+    border-radius:4px; background: var(--paper-2); color: var(--ink); resize:vertical; margin-top:6px;
+  }
+
+  .stats-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:26px; }
+  .stat-card{ border:1px solid var(--line); border-radius:6px; padding:14px 8px; text-align:center; }
+  .stat-card .num{ font-family: var(--font-serif); font-size:26px; color: var(--teal); display:block; }
+  .stat-card .lab{ font-size:11px; color: var(--ink-soft); margin-top:2px; display:block; }
+
+  .heatmap{ display:flex; gap:3px; overflow-x:auto; padding-bottom:10px; margin-bottom: 10px; }
+  .heat-col{ display:flex; flex-direction:column; gap:3px; }
+  .heat-cell{ width:11px; height:11px; border-radius:2px; background: var(--paper-2); border:1px solid var(--line); }
+  .heat-cell.level-1{ background: var(--teal-soft); }
+  .heat-cell.level-2{ background: color-mix(in srgb, var(--teal) 55%, var(--paper-2)); }
+  .heat-cell.level-3{ background: var(--teal); }
+  .heat-cell.level--1{ visibility:hidden; }
+  .heat-legend{ display:flex; align-items:center; gap:6px; font-size:11px; color: var(--ink-soft); }
+  .heat-legend .heat-cell{ width:10px; height:10px; }
+
+  .method-block{ margin-bottom: 20px; padding-bottom:18px; border-bottom:1px solid var(--line); }
+  .method-block:last-of-type{ border-bottom:none; }
+  .method-block h3{ font-family: var(--font-serif); font-weight:500; font-size:17px; margin:0 0 6px; }
+  .method-block p{ font-size:14px; margin:0; max-width: 60ch; color: var(--ink); }
+  .sources{ font-size:12px; color: var(--ink-soft); margin-top: 22px; max-width: 60ch; }
+
+  @media (max-width:420px){
+    .brand h1{ font-size:24px; }
+    .streak{ font-size:19px; }
+  }
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <header class="topbar">
+    <div class="brand">
+      <h1>Bitácora</h1>
+      <p class="date-today" id="todayLabel"></p>
+    </div>
+    <div class="topbar-right">
+      <div class="streak" title="Días seguidos con al menos una tarea cumplida">
+        <span id="streakCount">0</span><span class="streak-label">días</span>
+      </div>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Cambiar tema">🌓</button>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab active" data-tab="hoy" type="button">Hoy</button>
+    <button class="tab" data-tab="semana" type="button">Semana</button>
+    <button class="tab" data-tab="mes" type="button">Mes</button>
+    <button class="tab" data-tab="progreso" type="button">Progreso</button>
+    <button class="tab" data-tab="metodo" type="button">Método</button>
+  </nav>
+
+  <main>
+    <!-- HOY -->
+    <section id="tab-hoy" class="panel active">
+      <div id="carryOver" class="carry-box" hidden>
+        <span class="carry-text"></span>
+        <button id="carryOverBtn" type="button">Pasar a hoy</button>
+      </div>
+      <h2 class="section-title">Para hoy</h2>
+      <p class="hint">Anotá una sola tarea chica si es un día difícil. Cumplirla vale más que una lista larga sin tachar.</p>
+      <form id="todayForm" class="add-row">
+        <input type="text" id="todayInput" placeholder="¿Qué querés hacer hoy?" autocomplete="off" maxlength="140">
+        <button type="submit">Agregar</button>
+      </form>
+      <ul class="item-list" id="todayList"></ul>
+    </section>
+
+    <!-- SEMANA -->
+    <section id="tab-semana" class="panel">
+      <h2 class="section-title">Metas de la semana</h2>
+      <p class="hint" id="weekRangeLabel"></p>
+      <form id="weekGoalForm" class="add-row">
+        <input type="text" id="weekGoalInput" placeholder="Una meta simple para esta semana" autocomplete="off" maxlength="140">
+        <button type="submit">Agregar</button>
+      </form>
+      <p class="cap-msg" id="weekCapMsg"></p>
+      <ul class="item-list" id="weekGoalsList"></ul>
+
+      <div class="week-grid" id="weekGrid"></div>
+
+      <h2 class="section-title">Revisión semanal</h2>
+      <p class="hint">Un rato corto para vaciar la cabeza y arrancar la próxima semana con claridad.</p>
+      <ul class="review-list">
+        <li class="review-item">
+          <input type="checkbox" id="review-clear" class="review-check" data-key="clear">
+          <label for="review-clear">Anoté todo lo suelto que tenía en la cabeza de esta semana</label>
+        </li>
+        <li class="review-item">
+          <input type="checkbox" id="review-current" class="review-check" data-key="current">
+          <label for="review-current">Puse al día lo que quedó pendiente o sin marcar</label>
+        </li>
+        <li class="review-item">
+          <input type="checkbox" id="review-creative" class="review-check" data-key="creative">
+          <label for="review-creative">Pensé una sola cosa simple para mejorar la próxima semana</label>
+        </li>
+      </ul>
+    </section>
+
+    <!-- MES -->
+    <section id="tab-mes" class="panel">
+      <h2 class="section-title">Objetivos del mes</h2>
+      <p class="hint" id="monthLabel"></p>
+      <form id="monthGoalForm" class="add-row">
+        <input type="text" id="monthGoalInput" placeholder="Un objetivo para este mes" autocomplete="off" maxlength="140">
+        <button type="submit">Agregar</button>
+      </form>
+      <p class="cap-msg" id="monthCapMsg"></p>
+      <ul class="item-list" id="monthGoalsList"></ul>
+
+      <h2 class="section-title" style="margin-top:26px;">Notas del mes</h2>
+      <p class="hint">Para qué querés este mes, o algo que quieras recordar al mirar atrás.</p>
+      <textarea id="monthNote" placeholder="Escribí lo que quieras..."></textarea>
+    </section>
+
+    <!-- PROGRESO -->
+    <section id="tab-progreso" class="panel">
+      <h2 class="section-title">Tu constancia</h2>
+      <p class="hint">La racha se cuenta en días con al menos una tarea marcada como hecha.</p>
+      <div class="stats-grid">
+        <div class="stat-card"><span class="num" id="statStreak">0</span><span class="lab">racha actual</span></div>
+        <div class="stat-card"><span class="num" id="statBest">0</span><span class="lab">mejor racha</span></div>
+        <div class="stat-card"><span class="num" id="statRate">0%</span><span class="lab">cumplido (30 días)</span></div>
+      </div>
+      <h2 class="section-title">Últimos 70 días</h2>
+      <div class="heatmap" id="heatmap"></div>
+      <div class="heat-legend">
+        <span>menos</span>
+        <div class="heat-cell"></div><div class="heat-cell level-1"></div><div class="heat-cell level-2"></div><div class="heat-cell level-3"></div>
+        <span>más</span>
+      </div>
+    </section>
+
+    <!-- MÉTODO -->
+    <section id="tab-metodo" class="panel">
+      <h2 class="section-title">Por qué esta app funciona así</h2>
+      <p class="hint">Un resumen de lo que más ayuda a que un sistema de organización se mantenga en el tiempo, en vez de abandonarse a las dos semanas.</p>
+
+      <div class="method-block">
+        <h3>1. El problema no es fuerza de voluntad, es diseño</h3>
+        <p>La mayoría de los sistemas se abandonan porque se intenta cambiar demasiado de una vez, o porque se depende de la motivación del primer día en vez de armar una rutina que funcione incluso en un día cansado.</p>
+      </div>
+      <div class="method-block">
+        <h3>2. Empezar ridículamente chico</h3>
+        <p>Conviene que la versión mínima de la tarea sea tan simple que se pueda cumplir incluso en un mal día: anotar una sola tarea en vez de diez. Por eso esta app no exige llenar listas largas para "contar" como un día cumplido.</p>
+      </div>
+      <div class="method-block">
+        <h3>3. Atar el hábito a algo que ya hacés</h3>
+        <p>Encadenar la nueva costumbre a algo automático del día ("después de tomar el café, abro la app y anoto lo de hoy") funciona mejor que depender de acordarte por tu cuenta.</p>
+      </div>
+      <div class="method-block">
+        <h3>4. Revisión diaria y semanal</h3>
+        <p>Una revisión corta cada día para saber qué sigue, y una revisión semanal más completa para poner todo al día y planear lo que viene, es el hábito central de métodos como GTD. Por eso esta app separa el día a día de una revisión semanal aparte.</p>
+      </div>
+      <div class="method-block">
+        <h3>5. Retomar sin culpa vale más que la racha perfecta</h3>
+        <p>Un sistema sano no es el que nunca falla un día, sino el que se retoma al día siguiente sin necesidad de "empezar de cero". La racha de esta app se calcula así: si hoy todavía no hiciste nada, no se rompe hasta que termine el día.</p>
+      </div>
+      <div class="method-block">
+        <h3>6. Priorizar en vez de acumular</h3>
+        <p>Elegir pocas metas por semana y por mes (esta app limita a 5) ayuda a distinguir lo importante de lo urgente, en vez de terminar con una lista tan larga que da lo mismo por dónde empezar.</p>
+      </div>
+
+      <p class="sources">Basado en ideas de David Allen (método GTD y su revisión semanal), James Clear y BJ Fogg (hábitos pequeños y "habit stacking"), y prácticas de revisión semanal documentadas por Todoist y FacileThings.</p>
+    </section>
+  </main>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var STORAGE_KEY = 'bitacora_data_v1';
+  var THEME_KEY = 'bitacora_theme_v1';
+  var GOAL_CAP = 5;
+
+  var DIAS = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+  var MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+  function pad(n){ return n < 10 ? '0' + n : '' + n; }
+  function toKey(d){ return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()); }
+  function monthKeyOf(d){ return d.getFullYear() + '-' + pad(d.getMonth()+1); }
+  function mondayOf(d){
+    var day = d.getDay();
+    var diff = day === 0 ? -6 : 1 - day;
+    var m = new Date(d);
+    m.setHours(0,0,0,0);
+    m.setDate(d.getDate() + diff);
+    return m;
+  }
+  function weekKeyOf(d){ return 'W-' + toKey(mondayOf(d)); }
+  function formatDateEs(d){ return DIAS[d.getDay()] + ', ' + d.getDate() + ' de ' + MESES[d.getMonth()]; }
+  function formatMonthEs(d){ return MESES[d.getMonth()] + ' de ' + d.getFullYear(); }
+  function formatWeekRangeEs(monday){
+    var sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
+    return monday.getDate() + ' de ' + MESES[monday.getMonth()] + ' – ' + sunday.getDate() + ' de ' + MESES[sunday.getMonth()];
+  }
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+  function levelFor(n){ if(n<=0) return 0; if(n===1) return 1; if(n===2) return 2; return 3; }
+
+  function loadState(){
+    var fallback = { days:{}, weeks:{}, months:{}, bestStreak:0 };
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return fallback;
+      var parsed = JSON.parse(raw);
+      return Object.assign(fallback, parsed);
+    }catch(e){
+      console.error('No se pudieron leer los datos guardados', e);
+      return fallback;
+    }
+  }
+  function saveState(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    catch(e){ console.error('No se pudo guardar', e); }
+  }
+
+  var state = loadState();
+
+  var today = new Date();
+  var todayKey = toKey(today);
+  var thisWeekKey = weekKeyOf(today);
+  var thisMonthKey = monthKeyOf(today);
+
+  function ensureDay(key){ if(!state.days[key]) state.days[key] = { tasks: [] }; return state.days[key]; }
+  function ensureWeek(key){ if(!state.weeks[key]) state.weeks[key] = { goals: [], review: { clear:false, current:false, creative:false } }; return state.weeks[key]; }
+  function ensureMonth(key){ if(!state.months[key]) state.months[key] = { goals: [], note: '' }; return state.months[key]; }
+
+  function computeStreak(){
+    var streak = 0;
+    var cursor = new Date();
+    var first = true;
+    while(true){
+      var key = toKey(cursor);
+      var day = state.days[key];
+      var doneCount = day ? day.tasks.filter(function(t){ return t.done; }).length : 0;
+      if(doneCount > 0){
+        streak++;
+      } else if(!first){
+        break;
+      }
+      first = false;
+      cursor.setDate(cursor.getDate() - 1);
+      if(streak > 3650) break; // salvaguarda
+    }
+    return streak;
+  }
+
+  function getCollection(kind){
+    if(kind === 'week') return ensureWeek(thisWeekKey).goals;
+    if(kind === 'month') return ensureMonth(thisMonthKey).goals;
+    return ensureDay(todayKey).tasks;
+  }
+  function toggleItem(kind, id){
+    var col = getCollection(kind);
+    var item = col.find(function(x){ return x.id === id; });
+    if(item){ item.done = !item.done; persistAndRender(); }
+  }
+  function deleteItem(kind, id){
+    var col = getCollection(kind);
+    var idx = col.findIndex(function(x){ return x.id === id; });
+    if(idx > -1){ col.splice(idx, 1); persistAndRender(); }
+  }
+
+  function buildRow(item, kind){
+    var li = document.createElement('li');
+    li.className = 'tas
